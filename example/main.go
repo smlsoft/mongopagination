@@ -4,14 +4,15 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	paginate "github.com/gobeam/mongo-go-pagination"
+	"log"
+	"net/http"
+	"strconv"
+
+	"github.com/userplant/mongopagination"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"log"
-	"net/http"
-	"strconv"
 )
 
 // Product struct
@@ -74,16 +75,16 @@ func main() {
 		// sortValue := bson.M{
 		//		"$meta" : "textScore",
 		//	}
-		// paginatedData, err := paginate.New(collection).Context(ctx).Limit(limit).Page(page).Sort("score", sortValue)...
+		// paginatedData, err := mongopagination.New(collection).Context(ctx).Limit(limit).Page(page).Sort("score", sortValue)...
 		var products []Product
-		paginatedData, err := paginate.New(collection).Context(ctx).Limit(limit).Page(page).Sort("price", -1).Sort("quantity", -1).Select(projection).Filter(filter).Decode(&products).Find()
+		paginatedData, err := mongopagination.New(collection).Context(ctx).Limit(limit).Page(page).Sort("price", -1).Sort("quantity", -1).Select(projection).Filter(filter).Decode(&products).Find()
 		if err != nil {
 			panic(err)
 		}
 
 		payload := struct {
-			Data       []Product               `json:"data"`
-			Pagination paginate.PaginationData `json:"pagination"`
+			Data       []Product                      `json:"data"`
+			Pagination mongopagination.PaginationData `json:"pagination"`
 		}{
 			Pagination: paginatedData.Pagination,
 			Data:       products,
@@ -109,7 +110,7 @@ func main() {
 		// you can easily chain function and pass multiple query like here we are passing match
 		// query and projection query as params in Aggregate function you cannot use filter with Aggregate
 		// because you can pass filters directly through Aggregate param
-		aggPaginatedData, err := paginate.New(collection).Context(ctx).Limit(limit).Page(page).Sort("price", -1).Aggregate(match, projectQuery)
+		aggPaginatedData, err := mongopagination.New(collection).Context(ctx).Limit(limit).Page(page).Sort("price", -1).Aggregate(match, projectQuery)
 		if err != nil {
 			panic(err)
 		}
@@ -124,8 +125,8 @@ func main() {
 		}
 
 		payload := struct {
-			Data       []Product               `json:"data"`
-			Pagination paginate.PaginationData `json:"pagination"`
+			Data       []Product                      `json:"data"`
+			Pagination mongopagination.PaginationData `json:"pagination"`
 		}{
 			Pagination: aggPaginatedData.Pagination,
 			Data:       aggProductList,
