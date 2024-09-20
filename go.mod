@@ -1,4 +1,4 @@
-module github.com/userplant/mongopagination
+module github.com/smlsoft/mongopagination
 
 go 1.19
 
