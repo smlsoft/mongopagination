@@ -2,6 +2,7 @@ package mongopagination
 
 import (
 	"context"
+
 	"github.com/pkg/errors"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -252,6 +253,11 @@ func (paging *pagingQuery) Find() (paginatedData *PaginatedData, err error) {
 	}
 	if paging.Collation != nil {
 		opt.SetCollation(paging.Collation)
+	}
+
+	// if skip data morethen 6000 records should use memory more than 100 should be use disk
+	if skip > 6000 {
+		opt.SetAllowDiskUse(true)
 	}
 
 	ctx := paging.getContext()
